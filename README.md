@@ -1,1 +1,3 @@
-# compare-backend
+npm i
+
+node server.js

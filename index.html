@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Simulator (Streaming)</title>
+    <!-- Use CDN for socket.io client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        .control-panel { margin-bottom: 20px; display: flex; gap: 10px; }
+        input { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+
+        .browser-window {
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: #000;
+            display: inline-block;
+            position: relative;
+        }
+
+        /* The actual stream display */
+        #streamDisplay {
+            display: block;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Streaming Browser</h1>
+    
+    <div class="control-panel">
+        <input type="text" id="urlInput" placeholder="https://google.com" />
+        <button onclick="startSession()">Go</button>
+        <button onclick="zoomIn()">Zoom +</button>
+        <button onclick="zoomReset()">Reset</button>
+        <button onclick="zoomOut()">Zoom -</button>
+    </div>
+
+    <div class="browser-window">
+        <!-- Render the stream here -->
+        <img id="streamDisplay" width="1280" height="720" src="" alt="Browser Stream (Waiting...)" />
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000');
+        const img = document.getElementById('streamDisplay');
+        const urlInput = document.getElementById('urlInput');
+        
+        let isSessionActive = false;
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('frame', (base64) => {
+            img.src = `data:image/jpeg;base64,${base64}`;
+        });
+
+        function startSession() {
+            const url = urlInput.value;
+            if (!url) return alert('Enter URL');
+            
+            socket.emit('start-session', { 
+                url: url,
+                width: 1280,
+                height: 720
+            });
+            isSessionActive = true;
+        }
+
+        // --- Input Capturing ---
+
+        // Helper to get coordinates relative to the image
+        function getCoords(e) {
+            const rect = img.getBoundingClientRect();
+            // Scale if image is displayed at different size than actual
+            const scaleX = 1280 / rect.width; 
+            const scaleY = 720 / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        img.addEventListener('mousedown', (e) => {
+            if (!isSessionActive) return;
+            const { x, y } = getCoords(e);
+            socket.emit('input-event', { type: 'click', x, y });
+        });
+
+        img.addEventListener('mousemove', (e) => {
+            if (!isSessionActive) return;
+            const { x, y } = getCoords(e);
+            socket.emit('input-event', { type: 'mousemove', x, y });
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            if (!isSessionActive) return;
+            // Only capture if focused roughly on the app, or maybe always?
+            // For now, let's capture if the input box isn't focused
+            if (document.activeElement === urlInput) return;
+
+            socket.emit('input-event', { type: 'keydown', key: e.key });
+        });
+
+        // Zoom logic
+        let currentScale = 1.0;
+        function updateZoom() {
+             if(isSessionActive) socket.emit('input-event', { type: 'zoom', scale: currentScale });
+        }
+        function zoomIn() {
+            currentScale += 0.25;
+            updateZoom();
+        }
+        function zoomOut() {
+            currentScale = Math.max(0.25, currentScale - 0.25);
+            updateZoom();
+        }
+        function zoomReset() {
+             currentScale = 1.0;
+             updateZoom();
+        }
+
+        // Simple scroll handling (approximate)
+        img.addEventListener('wheel', (e) => {
+            if (!isSessionActive) return;
+            e.preventDefault();
+            // Send both X and Y deltas
+            socket.emit('input-event', { type: 'scroll', deltaX: e.deltaX, deltaY: e.deltaY });
+        });
+
+    </script>
+</body>
+</html>
