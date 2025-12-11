@@ -39,7 +39,8 @@ io.on('connection', (socket) => {
                     '--use-gl=angle',       // Better for Mac/Metal usually
                     '--ignore-gpu-blocklist', // Force GPU
                     '--enable-features=NetworkService',
-                    '--window-size=1280,720'
+                    '--window-size=1280,720',
+                    '--disable-dev-shm-usage'
                 ],
                 defaultViewport: null
             });

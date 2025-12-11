@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: website-simulator
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/puppeteer
