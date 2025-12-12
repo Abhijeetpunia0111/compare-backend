@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npx puppeteer@latest install",
+    "build": "tsc -p . || echo 'no build step'",
     "start": "node src/server.js"
   },
   "keywords": [],

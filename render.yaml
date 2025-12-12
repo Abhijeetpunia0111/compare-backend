@@ -2,10 +2,19 @@ services:
   - type: web
     name: website-simulator
     env: node
-    buildCommand: npm install
+    # Build: try `npm ci` first, fall back to `npm install`, then run puppeteer install and build/start
+    buildCommand: |
+      npm ci || npm install
+      npx puppeteer@latest install --ignore-scripts || true
+      npm run build || true
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
       - key: PUPPETEER_CACHE_DIR
-        value: /opt/render/project/puppeteer
+        value: /tmp/puppeteer
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "false"
+      # optional: if you install chrome in runtime Docker, set this to chrome path
+      - key: CHROME_EXECUTABLE
+        value: /usr/bin/google-chrome-stable
