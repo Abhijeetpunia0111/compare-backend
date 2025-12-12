@@ -1,22 +1,22 @@
 {
   "name": "website-simulator",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Remote browser simulator backend",
+  "main": "src/server.js",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npx puppeteer@latest install",
-    "build": "tsc -p . || echo 'no build step'",
+    "postinstall": "PUPPETEER_CACHE_DIR=/tmp/puppeteer npx puppeteer@latest install",
+    "build": "echo 'no build step' || true",
     "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.2.1",
-    "puppeteer": "^24.32.0",
+    "express": "^4.18.2",
+    "puppeteer": "^22.10.0",
     "socket.io": "^4.8.1"
   }
 }
