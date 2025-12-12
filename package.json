@@ -2,13 +2,13 @@
   "name": "website-simulator",
   "version": "1.0.0",
   "description": "Remote browser simulator backend",
-  "main": "src/server.js",
+  "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "PUPPETEER_CACHE_DIR=/tmp/puppeteer npx puppeteer@latest install",
     "build": "echo 'no build step' || true",
-    "start": "node src/server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
